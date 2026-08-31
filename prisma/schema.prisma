@@ -1,0 +1,75 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum TeamRole {
+  ADMIN
+  COACH
+  PLAYER
+}
+
+enum PlayerPosition {
+  CARRY
+  MID
+  OFFLANE
+  SUPPORT_4
+  SUPPORT_5
+}
+
+model User {
+  id        String       @id @default(cuid())
+  name      String
+  email     String       @unique
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  memberships TeamMember[]
+}
+
+model Team {
+  id        String       @id @default(cuid())
+  name      String
+  slug      String       @unique
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  members TeamMember[]
+}
+
+model TeamMember {
+  id        String   @id @default(cuid())
+  role      TeamRole
+  userId    String
+  teamId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team          Team           @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  playerProfile PlayerProfile?
+
+  @@unique([userId, teamId])
+  @@index([teamId])
+  @@index([userId])
+}
+
+model PlayerProfile {
+  id            String         @id @default(cuid())
+  nickname      String
+  steamAccountId String?
+  primaryPosition PlayerPosition
+  secondaryPosition PlayerPosition?
+  mmr           Int?
+  teamMemberId  String         @unique
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  teamMember TeamMember @relation(fields: [teamMemberId], references: [id], onDelete: Cascade)
+
+  @@index([steamAccountId])
+}

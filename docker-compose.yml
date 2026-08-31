@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: dota-team-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: dota_admin
+      POSTGRES_PASSWORD: dota_password_dev
+      POSTGRES_DB: dota_team
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
