@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
 
 type Player = {
@@ -25,6 +26,22 @@ const positions = [
   { value: "SUPPORT_4", label: "Support / Pos 4" },
   { value: "SUPPORT_5", label: "Support / Pos 5" },
 ];
+
+function positionLabel(position: string | null) {
+  if (!position) {
+    return "Não informada";
+  }
+
+  const labels: Record<string, string> = {
+    CARRY: "Carry / Pos 1",
+    MID: "Mid / Pos 2",
+    OFFLANE: "Offlane / Pos 3",
+    SUPPORT_4: "Support / Pos 4",
+    SUPPORT_5: "Support / Pos 5",
+  };
+
+  return labels[position] ?? position;
+}
 
 export default function PlayersPage() {
   const [players, setPlayers] = useState<Player[]>([]);
@@ -62,19 +79,16 @@ export default function PlayersPage() {
 
     const response = await fetch("/api/players", {
       method: "POST",
-
       headers: {
         "Content-Type": "application/json",
       },
-
       body: JSON.stringify({
         name: formData.get("name"),
         nickname: formData.get("nickname"),
         email: formData.get("email"),
         steamAccountId: formData.get("steamAccountId"),
         primaryPosition: formData.get("primaryPosition"),
-        secondaryPosition:
-          formData.get("secondaryPosition"),
+        secondaryPosition: formData.get("secondaryPosition"),
         mmr:
           typeof mmrValue === "string" && mmrValue
             ? Number(mmrValue)
@@ -200,7 +214,7 @@ export default function PlayersPage() {
 
           <button
             type="submit"
-            className="w-full rounded-md bg-white px-4 py-2 font-medium text-black"
+            className="w-full rounded-md bg-white px-4 py-2 font-medium text-black transition hover:bg-zinc-200"
           >
             Cadastrar jogador
           </button>
@@ -232,25 +246,42 @@ export default function PlayersPage() {
               {players.map((player) => (
                 <div
                   key={player.id}
-                  className="flex items-center justify-between p-5"
+                  className="grid gap-4 p-5 md:grid-cols-[1fr_auto] md:items-center"
                 >
                   <div>
-                    <p className="font-semibold">
+                    <Link
+                      href={`/dashboard/players/${player.id}`}
+                      className="font-semibold transition hover:text-zinc-300 hover:underline"
+                    >
                       {player.nickname}
-                    </p>
+                    </Link>
 
                     <p className="text-sm text-zinc-400">
                       {player.teamMember.user.name}
                     </p>
+
+                    <p className="mt-1 text-xs text-zinc-500">
+                      {player.teamMember.user.email}
+                    </p>
                   </div>
 
-                  <div className="text-right">
-                    <p className="text-sm">
-                      {player.primaryPosition}
+                  <div className="grid gap-1 text-right">
+                    <p className="text-sm font-medium">
+                      {positionLabel(player.primaryPosition)}
+                    </p>
+
+                    <p className="text-xs text-zinc-400">
+                      Secundária:{" "}
+                      {positionLabel(player.secondaryPosition)}
+                    </p>
+
+                    <p className="text-xs text-zinc-400">
+                      MMR: {player.mmr ?? "Não informado"}
                     </p>
 
                     <p className="text-xs text-zinc-500">
-                      MMR: {player.mmr ?? "não informado"}
+                      Steam ID:{" "}
+                      {player.steamAccountId ?? "Não informado"}
                     </p>
                   </div>
                 </div>
